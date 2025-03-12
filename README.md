@@ -45,21 +45,6 @@ wget https://raw.githubusercontent.com/zg404/dorado_updater/refs/heads/main/upda
    ```bash
    conda run -n dorado dorado --version
    ```
-
-
-
-## Design Rationale
-
-1. Uses conda's `bin/` directory that is already in `$PATH`. This provides a failsafe way to ensure wide portability across different Linux machines.
-
-2. Handles Dorado's pre-compiled binaries which include their own `bin/` and `lib/` directories. This would normally require adding the nested `bin/` to `$PATH` (e.g., `~/miniconda/envs/dorado/bin/bin`).
-
-3. Creates a symlink in the conda env `bin/` that points to the dorado binary in the nested `bin/`, allowing the command to be called directly after conda activation.
-
-4. Covers edge cases such as multiple Dorado versions, missing conda, and incorrect file structures.
-
-
-
 ## Command Line Options
 
 - `--clean-install`: Removes existing Dorado environment and creates a new one
@@ -79,6 +64,16 @@ Common issues:
 - If you see permission errors, ensure you have write access to your conda installation
 - If conda cannot be found, ensure it's properly installed and in your PATH
 - If the dorado executable isn't found after installation, try the clean install option
+
+## Design Rationale
+
+1. Uses conda's `bin/` directory that is already in `$PATH`. This provides a failsafe way to ensure wide portability across different Linux machines.
+
+2. Handles Dorado's pre-compiled binaries which include their own `bin/` and `lib/` directories. This would normally require adding the nested `bin/` to `$PATH` (e.g., `~/miniconda/envs/dorado/bin/bin`).
+
+3. Creates a symlink in the conda env `bin/` that points to the dorado binary in the nested `bin/`, allowing the command to be called directly after conda activation.
+
+4. Covers edge cases such as multiple Dorado versions, missing conda, and incorrect file structures.
 
 ## License
 

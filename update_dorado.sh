@@ -251,10 +251,8 @@ rm -rf "$dorado_folder" # remove extracted folder
 # --- Verification ---
 echo -e "${GREEN}Dorado update completed successfully!${NC}"
 echo ""
-echo -e "${BOLD}To verify the installation, please run the following commands:${NC}"
-echo -e "  ${CYAN}conda activate dorado${NC}"
-echo -e "  ${CYAN}dorado --version${NC}"
-echo -e "  ${CYAN}conda deactivate${NC}"
+echo -e "${BOLD}To verify the installation, please run the following command:${NC}"
+echo -e "  ${CYAN}conda run -n dorado dorado --version${NC}"
 echo ""
 echo -e "If the 'dorado --version' command shows the expected version number, the update was successful."
 

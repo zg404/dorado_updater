@@ -28,7 +28,7 @@ Correct file structure will look like this:
    
 2. Clone this repository or download the update_dorado.sh script
 ```bash
-wget https://raw.githubusercontent.com/zg404/dorado-updater/main/update_dorado.sh
+wget https://raw.githubusercontent.com/zg404/dorado_updater/refs/heads/main/update_dorado.sh
 ```
 
 3. Make the script executable:

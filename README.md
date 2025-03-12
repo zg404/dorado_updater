@@ -43,9 +43,7 @@ wget https://raw.githubusercontent.com/zg404/dorado_updater/refs/heads/main/upda
 
 5. After successful installation, verify it works:
    ```bash
-   conda activate dorado
-   dorado --version
-   conda deactivate
+   conda run -n dorado dorado --version
    ```
 
 

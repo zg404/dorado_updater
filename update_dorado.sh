@@ -150,7 +150,7 @@ fi
 # Create environment if it doesn't exist or was removed
 if [ "$env_exists" -eq 0 ]; then
   echo -e "${CYAN}Creating new Dorado environment...${NC}"
-  $conda_cmd create -y -n dorado pip
+  $conda_cmd create -y -n dorado pip -c bioconda samtools
   
   # Verify environment was created
   if ! $conda_cmd env list | grep -q "dorado"; then

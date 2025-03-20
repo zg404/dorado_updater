@@ -2,6 +2,9 @@
 
 A bash script to streamline the installation and updating of Oxford Nanopore's Dorado software on Linux systems.
 
+> [!NOTE]
+> This script is intended for users who may be unfamiliar with Linux or prefer a straightforward install and update for Dorado. However, the manual process is not difficult and can be done in a few steps. I highly encourage users to learn the process and be more comfortable with the command line: [Manual Installation](#manual-installation). You might find you don't need this script!
+
 ## Overview
 
 The goal of this tool is to make updating Dorado easier by overcoming some quirks in its binary packaging. The primary challenge is avoiding having to update the user's `$PATH` after each update. This script implements a workaround using a static `bin/` location already in the `$PATH` (via conda) along with an unchanging symlink that points to the nested `bin/` that contains the actual Dorado binaries.
@@ -15,10 +18,6 @@ Correct file structure will look like this:
 ├── dorado -> ~/miniconda3/envs/dorado/bin/bin/dorado (symlink)
 └── [bunch of files]
 ```
-> [!NOTE]
-> This script is intended for users who may be unfamiliar with Linux or prefer a straightforward install and update for Dorado. However, the manual process is not difficult and can be done in a few steps. I highly encourage users to learn the process and be more comfortable with the command line: [Manual Installation](#manual-installation). You might find you don't need this script!
-
-
 ## Requirements
 - Linux x64 system (WSL2 supported)
 - Working conda installation (Miniconda, Miniforge, or Anaconda)

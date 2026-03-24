@@ -128,11 +128,11 @@ conda info --envs
 cp -r ./bin/* <path>/dorado/bin/
 cp -r ./lib/* <path>/dorado/lib/
 ```
-3. Verify the installation
+4. Verify the installation
 ```bash
 conda run -n dorado dorado --version
 ```
-4. To update Dorado, delete the old binaries and libraries and repeat the process:
+5. To update Dorado, delete the old binaries and libraries and repeat the process:
 ```bash
 # Find your conda envs path with: conda info --envs
 # Then (replace <path> with actual path):

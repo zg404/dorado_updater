@@ -111,9 +111,6 @@ IFS=$'\n' sorted_files=($(sort -V <<<"${dorado_files[*]}"))
 unset IFS
 dorado_targz="${sorted_files[-1]}"
 
-# Get the expected folder name from the tar file name
-dorado_folder=$(basename "$dorado_targz" .tar.gz)
-
 # Note: Using temp directory, no need to check for existing extracted folder
 
 # Warn if multiple versions were found

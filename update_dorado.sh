@@ -191,22 +191,24 @@ fi
 
 # --- Binary update process ---
 
-# Define paths to the nested bin and lib directories in the environment.
-env_bin="$dorado_env/bin/bin"
-env_lib="$dorado_env/bin/lib"
+# Define paths to the bin and lib directories in the environment.
+env_bin="$dorado_env/bin"
+env_lib="$dorado_env/lib"
 
 # Create necessary directory structure
 echo -e "${CYAN}Setting up directory structure...${NC}"
-mkdir -p "$dorado_env/bin/bin" "$dorado_env/bin/lib"
+mkdir -p "$dorado_env/bin" "$dorado_env/lib"
 
-# Clean up existing files if they exist
+# Clean up existing files if they exist (preserve conda-managed files)
 echo -e "${CYAN}Cleaning up existing Dorado binaries...${NC}"
-if [ -d "$env_bin" ]; then
-  find "$env_bin" -mindepth 1 -maxdepth 1 ! -lname '*' -delete 2>/dev/null || true
-fi
-
+# Remove dorado and its dependencies from env/bin
+for f in dorado*; do
+  [ -f "$env_bin/$f" ] && rm -f "$env_bin/$f"
+done
+# Remove libraries from env/lib
 if [ -d "$env_lib" ]; then
-  find "$env_lib" -mindepth 1 -maxdepth 1 -delete 2>/dev/null || true
+  find "$env_lib" -mindepth 1 -maxdepth 1 -type f -delete 2>/dev/null || true
+  find "$env_lib" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} + 2>/dev/null || true
 fi
  
 # Verify source directories exist before copying
@@ -218,32 +220,27 @@ fi
 
 # Copy the new binaries and libraries
 echo -e "${CYAN}Copying new Dorado binaries...${NC}"
-cp -r "$dorado_folder/bin/"* "$dorado_env/bin/bin/" || { 
-  echo -e "${RED}Error: Failed to copy bin directory.${NC}" 
+cp -r "$dorado_folder/bin/"* "$dorado_env/bin/" || {
+  echo -e "${RED}Error: Failed to copy bin directory.${NC}"
   exit 1
 }
-cp -r "$dorado_folder/lib/"* "$dorado_env/bin/lib/" || { 
-  echo -e "${RED}Error: Failed to copy lib directory.${NC}" 
+cp -r "$dorado_folder/lib/"* "$dorado_env/lib/" || {
+  echo -e "${RED}Error: Failed to copy lib directory.${NC}"
   exit 1
 }
 
-# Verify the dorado executable exists after copying
+# Verify the dorado executable is accessible
+if [ ! -f "$env_bin/dorado" ]; then
+  echo -e "${RED}Error: Dorado executable not found at $env_bin/dorado${NC}"
+  exit 1
+fi
+
+# Verify the dorado executable is accessible (now directly in env/bin)
 if [ ! -f "$env_bin/dorado" ]; then
   echo -e "${RED}Error: Dorado executable not found after installation.${NC}"
   exit 1
 fi
-
-# Ensure the symlink exists and is correct.
-symlink_path="$dorado_env/bin/dorado"
-target_path="$env_bin/dorado"
-
-if [ ! -L "$symlink_path" ] || [ "$(readlink "$symlink_path")" != "$target_path" ]; then
-  echo -e "${CYAN}Creating/Updating symlink...${NC}"
-  ln -sf "$target_path" "$symlink_path" || { 
-    echo -e "${RED}Error: Failed to create symlink.${NC}"
-    exit 1
-  }
-fi
+echo -e "${GREEN}Dorado binary installed to: $env_bin/dorado${NC}"
 
 # --- Cleanup ---
 rm -rf "$dorado_folder" # remove extracted folder

@@ -117,8 +117,22 @@ else
 fi
 echo -e "${CYAN}Using ${conda_cmd} at: ${conda_path}${NC}"
 
-# Extract the conda base directory robustly.
-conda_base=$(dirname "$(dirname "$conda_path")")
+# Check for jq for JSON parsing
+if command -v jq >/dev/null 2>&1; then
+  USE_JQ=1
+  echo -e "${CYAN}Using jq for reliable conda path detection${NC}"
+else
+  USE_JQ=0
+  echo -e "${YELLOW}Warning: jq not found. Using fallback path detection.${NC}"
+fi
+
+# Extract the conda base directory - prefer JSON for accuracy
+if [ "$USE_JQ" -eq 1 ]; then
+  conda_base=$($conda_cmd info --base 2>/dev/null || dirname "$(dirname "$conda_path")")
+else
+  conda_base=$(dirname "$(dirname "$conda_path")")
+fi
+
 if [ ! -d "$conda_base" ]; then
     echo -e "${RED}Error: Could not determine Conda base directory. Expected directory structure not found.${NC}"
     exit 1
@@ -182,21 +196,30 @@ if [ "$verify_checksum" -eq 1 ]; then
 fi
 
 # Define the dorado environment path and check if it exists
-# First check if conda env exists using conda command
 env_exists=0
-if $conda_cmd env list | grep -q "dorado"; then
-  env_exists=1
-  # Get the actual path from conda
-  dorado_env=$($conda_cmd env list | grep "dorado" | awk '{print $NF}')
-  # If path not found from conda, try to locate it
-  if [ -z "$dorado_env" ]; then
-    dorado_env=$(find "$conda_base/envs/" -type d -iname "dorado" -print -quit)
-  fi
+dorado_env=""
+
+if [ "$USE_JQ" -eq 1 ]; then
+  # Use JSON for reliable parsing
+  env_json=$($conda_cmd env list --json 2>/dev/null || echo '{"envs":[]}')
+  dorado_env=$(echo "$env_json" | jq -r '.envs[] | select(endswith("/dorado"))' 2>/dev/null | head -n 1)
+  [ -n "$dorado_env" ] && env_exists=1
 else
-  # If not found in conda list, try to find it directly
-  dorado_env=$(find "$conda_base/envs/" -type d -iname "dorado" -print -quit)
-  if [ -n "$dorado_env" ]; then
+  # Fallback to grep/awk parsing
+  if $conda_cmd env list | grep -q "dorado"; then
     env_exists=1
+    # Get the actual path from conda
+    dorado_env=$($conda_cmd env list | grep "dorado" | awk '{print $NF}')
+    # If path not found from conda, try to locate it
+    if [ -z "$dorado_env" ]; then
+      dorado_env=$(find "$conda_base/envs/" -type d -iname "dorado" -print -quit)
+    fi
+  else
+    # If not found in conda list, try to find it directly
+    dorado_env=$(find "$conda_base/envs/" -type d -iname "dorado" -print -quit)
+    if [ -n "$dorado_env" ]; then
+      env_exists=1
+    fi
   fi
 fi
 
@@ -225,9 +248,14 @@ if [ "$env_exists" -eq 0 ]; then
   fi
   
   # Get the path of the newly created environment
-  dorado_env=$($conda_cmd env list | grep "dorado" | awk '{print $NF}')
-  if [ -z "$dorado_env" ]; then
-    dorado_env=$(find "$conda_base/envs/" -type d -iname "dorado" -print -quit)
+  if [ "$USE_JQ" -eq 1 ]; then
+    env_json=$($conda_cmd env list --json 2>/dev/null || echo '{"envs":[]}')
+    dorado_env=$(echo "$env_json" | jq -r '.envs[] | select(endswith("/dorado"))' 2>/dev/null | head -n 1)
+  else
+    dorado_env=$($conda_cmd env list | grep "dorado" | awk '{print $NF}')
+    if [ -z "$dorado_env" ]; then
+      dorado_env=$(find "$conda_base/envs/" -type d -iname "dorado" -print -quit)
+    fi
   fi
 else
   echo -e "${CYAN}Dorado environment found at: ${BOLD}$dorado_env${NC}"

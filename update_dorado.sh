@@ -202,8 +202,8 @@ mkdir -p "$dorado_env/bin" "$dorado_env/lib"
 # Clean up existing files if they exist (preserve conda-managed files)
 echo -e "${CYAN}Cleaning up existing Dorado binaries...${NC}"
 # Remove dorado and its dependencies from env/bin
-for f in dorado*; do
-  [ -f "$env_bin/$f" ] && rm -f "$env_bin/$f"
+for f in "$env_bin"/dorado*; do
+  [ -f "$f" ] && rm -f "$f"
 done
 # Remove libraries from env/lib
 if [ -d "$env_lib" ]; then

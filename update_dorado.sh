@@ -201,16 +201,18 @@ mkdir -p "$dorado_env/bin" "$dorado_env/lib"
 
 # Clean up existing files if they exist (preserve conda-managed files)
 echo -e "${CYAN}Cleaning up existing Dorado binaries...${NC}"
+shopt -s nullglob
 # Remove dorado and its dependencies from env/bin
 for f in "$env_bin"/dorado*; do
-  [ -f "$f" ] && rm -f "$f"
+  rm -f "$f"
 done
 # Remove dorado-related libraries from env/lib
 if [ -d "$env_lib" ]; then
   for f in "$env_lib"/libdorado*; do
-    [ -f "$f" ] && rm -f "$f"
+    rm -f "$f"
   done
 fi
+shopt -u nullglob
  
 # Verify source directories exist before copying
 if [ ! -d "$dorado_folder/bin" ] || [ ! -d "$dorado_folder/lib" ]; then
@@ -231,7 +233,7 @@ cp -rf "$dorado_folder/lib/"* "$dorado_env/lib/" || {
 }
 
 # Verify the dorado executable is accessible (now directly in env/bin)
-if [ ! -f "$env_bin/dorado" ]; then
+if [ ! -x "$env_bin/dorado" ]; then
   echo -e "${RED}Error: Dorado executable not found at $env_bin/dorado${NC}"
   exit 1
 fi

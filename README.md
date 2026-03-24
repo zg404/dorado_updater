@@ -4,7 +4,7 @@ A bash script to streamline the installation and updating of Oxford Nanopore's D
 
 ## Overview
 
-The goal of this tool is to make updating Dorado easier by overcoming some quirks in its binary packaging. The primary challenge is avoiding having to update the user's `$PATH` after each update. This script implements a workaround using a static `bin/` location already in the `$PATH` (via conda) along with an unchanging symlink that points to the nested `bin/` that contains the actual Dorado binaries.
+The goal of this tool is to make updating Dorado easier by overcoming some quirks in its binary packaging. The primary challenge is avoiding having to update the user's `$PATH` after each update. This script implements a workaround using a static `bin/` location already in the `$PATH` (via conda) by placing Dorado binaries directly in the standard conda environment layout.
 Correct file structure will look like this:
 ```
 ~/miniconda3/envs/dorado/
@@ -63,7 +63,7 @@ wget https://raw.githubusercontent.com/zg404/dorado_updater/refs/heads/main/upda
 
 If you encounter errors, it may be best to delete the old conda dorado environment and start fresh:
 
-1. Either manually delete the env folder (located in `~/miniconda/env/dorado`)
+1. Either manually delete the env folder (located in `~/miniconda3/envs/dorado`)
 2. Or run the script with the clean install option:
    ```bash
    ./update_dorado.sh --clean-install
@@ -119,7 +119,7 @@ Installing Dorado in a new or existing conda environment can be useful if you ne
    conda run -n dorado pip install pod5
    ```
 
-2. Copy the extracted `bin/` and `lib/` directories to the conda environment. The path is typically `~/miniconda3/envs/` or `~/miniforge3/envs/`:
+3. Copy the extracted `bin/` and `lib/` directories to the conda environment. The path is typically `~/miniconda3/envs/` or `~/miniforge3/envs/`:
 ```bash
 # First, find your conda envs path:
 conda info --envs

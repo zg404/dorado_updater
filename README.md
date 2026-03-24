@@ -23,6 +23,10 @@ Correct file structure will look like this:
 - Linux x64 system (WSL2 supported)
 - Working conda installation (Miniconda, Miniforge, or Anaconda)
 - Download the latest Dorado Linux-x64 package: [dorado-X.X.X-linux-x64.tar.gz](https://github.com/nanoporetech/dorado?tab=readme-ov-file#installation)
+- Optional: Download the corresponding SHA256 checksum file for verification
+
+> [!TIP]
+> Download the SHA256 checksum from the [GitHub releases page](https://github.com/nanoporetech/dorado/releases) alongside the tar.gz file. Place it in the same directory with the same base name (e.g., `dorado-0.8.0-linux-x64.tar.gz.sha256`).
 
 ## Usage
 
@@ -39,10 +43,12 @@ wget https://raw.githubusercontent.com/zg404/dorado_updater/refs/heads/main/upda
    chmod +x update_dorado.sh
    ```
 
-4. Run the script in the same directory as the Dorado tar.gz file. Optional: add "--clean-install" to remove the existing Dorado environment and create a new one:
-   ```bash
-   ./update_dorado.sh [--clean-install]
-   ```
+4. Run the script in the same directory as the Dorado tar.gz file. Optional flags:
+    ```bash
+    ./update_dorado.sh [--clean-install] [--verify-checksum]
+    ```
+   - `--clean-install`: Remove existing Dorado environment and create a new one
+   - `--verify-checksum`: Verify SHA256 checksum before installation
 
 5. After successful installation, verify it works:
    ```bash

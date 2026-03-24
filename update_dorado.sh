@@ -29,16 +29,22 @@ function show_help {
   echo ""
   echo "Options:"
   echo "  --clean-install    Remove existing Dorado environment and create a new one"
+  echo "  --verify-checksum  Verify SHA256 checksum before installation"
   echo "  --help             Show this help message"
 }
 
 # Process command line arguments
 clean_install=0
+verify_checksum=0
 for arg in "$@"; do
   case "$arg" in
     --clean-install)
       clean_install=1
       echo -e "${YELLOW}Clean install requested. Will remove existing Dorado environment if it exists.${NC}"
+      ;;
+    --verify-checksum)
+      verify_checksum=1
+      echo -e "${YELLOW}Checksum verification requested.${NC}"
       ;;
     --help)
       show_help
@@ -51,6 +57,50 @@ for arg in "$@"; do
       ;;
   esac
 done
+
+# Verify SHA256 checksum of tar.gz file
+function verify_checksum {
+  local file="$1"
+  local checksum_file="${file}.sha256"
+
+  if [ ! -f "$checksum_file" ]; then
+    echo -e "${YELLOW}Warning: Checksum file not found: $checksum_file${NC}"
+    echo -e "${CYAN}Expected format: <checksum>  $(basename "$file")${NC}"
+    echo -e "${CYAN}Skipping verification.${NC}"
+    return 0
+  fi
+
+  echo -e "${CYAN}Verifying checksum...${NC}"
+
+  # Extract expected checksum and filename from checksum file
+  local expected_checksum=$(awk '{print $1}' "$checksum_file")
+  local expected_filename=$(awk '{print $2}' "$checksum_file")
+
+  if [ -z "$expected_checksum" ]; then
+    echo -e "${RED}Error: Could not read checksum from file.${NC}"
+    return 1
+  fi
+
+  # Verify filename matches
+  if [ "$expected_filename" != "$(basename "$file")" ]; then
+    echo -e "${YELLOW}Warning: Filename in checksum file doesn't match tar.gz file${NC}"
+    echo -e "${CYAN}Expected: $expected_filename${NC}"
+    echo -e "${CYAN}Found: $(basename "$file")${NC}"
+  fi
+
+  # Calculate actual checksum
+  local actual_checksum=$(shasum -a 256 "$file" | awk '{print $1}')
+
+  if [ "$expected_checksum" == "$actual_checksum" ]; then
+    echo -e "${GREEN}Checksum verified successfully!${NC}"
+    return 0
+  else
+    echo -e "${RED}Error: Checksum mismatch!${NC}"
+    echo -e "${RED}Expected: $expected_checksum${NC}"
+    echo -e "${RED}Actual:   $actual_checksum${NC}"
+    return 1
+  fi
+}
 
 # --- Conda environment setup and checks ---
 
@@ -121,6 +171,14 @@ if [ "$dorado_count" -gt 1 ]; then
     echo -e "    ${sorted_files[$i]}"
   done
   echo ""
+fi
+
+# Verify checksum if requested
+if [ "$verify_checksum" -eq 1 ]; then
+  verify_checksum "$dorado_targz" || {
+    echo -e "${RED}Error: Checksum verification failed. Installation aborted.${NC}"
+    exit 1
+  }
 fi
 
 # Define the dorado environment path and check if it exists

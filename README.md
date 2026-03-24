@@ -7,13 +7,13 @@ A bash script to streamline the installation and updating of Oxford Nanopore's D
 The goal of this tool is to make updating Dorado easier by overcoming some quirks in its binary packaging. The primary challenge is avoiding having to update the user's `$PATH` after each update. This script implements a workaround using a static `bin/` location already in the `$PATH` (via conda) along with an unchanging symlink that points to the nested `bin/` that contains the actual Dorado binaries.
 Correct file structure will look like this:
 ```
-~/miniconda3/envs/dorado/bin/
+~/miniconda3/envs/dorado/
 ├── bin
-│   └── dorado
+│   ├── dorado
+│   └── [dorado binaries]
 ├── lib
-│   └── [bunch of files]
-├── dorado -> ~/miniconda3/envs/dorado/bin/bin/dorado (symlink)
-└── [bunch of files]
+│   └── [dorado libraries]
+└── [conda files]
 ```
 > [!NOTE]
 > This script is intended for users who may be unfamiliar with Linux or prefer a straightforward install and update for Dorado. However, the manual process is not difficult and can be done in a few steps. I highly encourage users to learn the process and be more comfortable with the command line: [Manual Installation](#manual-installation). You might find you don't need this script!
@@ -78,9 +78,9 @@ Common issues:
 
 1. Uses a conda env `bin/` to avoid messing with the user `$PATH`. This provides a failsafe way to ensure wide portability across different Linux machines. Containing the Dorado binaries in a conda env also mitigates the risk of conflicts with other system files.
 
-2. Handles Dorado's pre-compiled binaries structure, which includes`bin/` and `lib/` directories. This would normally require adding the nested `bin/` to `$PATH` (e.g., `~/miniconda/envs/dorado/bin/bin`).
+2. Handles Dorado's pre-compiled binaries structure by placing them directly in the standard conda environment layout (`env/bin/` for binaries and `env/lib/` for libraries). This ensures dorado is immediately accessible after activating the environment.
 
-3. Creates a symlink in the root of the conda env `bin/` that points to the dorado binary in the nested `bin/`, allowing the command to be called directly after conda activation.
+3. Avoids modifying the user's system-wide `$PATH`, keeping dorado contained within the conda environment and preventing conflicts with other tools.
 
 4. Covers edge cases such as multiple Dorado versions, missing conda, and incorrect file structures.
 
@@ -94,18 +94,15 @@ If you prefer to forgo Conda, it will allow you to run Dorado without activating
 tar -xvf dorado-X.X.X-linux-x64.tar.gz
 cd dorado-X.X.X-linux-x64/
 ```
-2. Copy the extracted `bin/` and `lib/` directories to a location in your `$PATH`. In most Linux distros, this should be: `~/.local/bin`
+2. Copy the extracted `bin/` directory contents to `~/.local/bin`, and `lib/` to `~/.local/lib`:
 ```bash
-cp -r ./bin/ ./lib/ $HOME/.local/bin
+cp -r ./bin/* ~/.local/bin/
+cp -r ./lib/* ~/.local/lib/
 ```
-3. Create a symlink in the same location that points to the dorado binary in the nested `bin/` directory. 
- ```bash
- ln -s $HOME/.local/bin/bin/dorado $HOME/.local/bin/dorado
- ```
-4. Run `dorado --version` to verify the installation
-5. To update Dorado, delete the old `~/.local/bin/bin/` and `~/.local/lib/` directories and repeat the process with the new version.
+3. Run `dorado --version` to verify the installation
+4. To update Dorado, delete the old binaries and libraries and repeat the process with the new version:
 ```bash
-rm -rf $HOME/.local/bin/bin/ $HOME/.local/bin/lib/
+rm -rf ~/.local/bin/dorado* ~/.local/lib/*dorado*
 ```
 
 ### Conda Method
@@ -122,21 +119,24 @@ Installing Dorado in a new or existing conda environment can be useful if you ne
    conda run -n dorado pip install pod5
    ```
 
-2. Copy the extracted `bin/` and `lib/` directories to the new or existing Conda env, found in: `~/miniconda3/envs/`
+2. Copy the extracted `bin/` and `lib/` directories to the conda environment. The path is typically `~/miniconda3/envs/` or `~/miniforge3/envs/`:
 ```bash
-sudo cp -r ./bin/ ./lib/ ~/miniconda3/envs/dorado/
+# First, find your conda envs path:
+conda info --envs
+
+# Then copy (replace <path> with actual path from above):
+cp -r ./bin/* <path>/dorado/bin/
+cp -r ./lib/* <path>/dorado/lib/
 ```
-3. Create a symlink in the same location that points to the dorado binary in the nested `bin/` directory. 
- ```bash
- ln -s ~/miniconda3/envs/dorado/bin/bin/dorado ~/miniconda3/envs/dorado/bin/dorado
- ```
-4. Verify the installation
+3. Verify the installation
 ```bash
 conda run -n dorado dorado --version
 ```
-5. To update Dorado, delete the old `~/miniconda3/envs/dorado/bin/bin/` and `~/miniconda3/envs/dorado/lib/` directories and repeat the process with the new version.
+4. To update Dorado, delete the old binaries and libraries and repeat the process:
 ```bash
-rm -rf ~/miniconda3/envs/dorado/bin/bin/ ~/miniconda3/envs/dorado/lib/
+# Find your conda envs path with: conda info --envs
+# Then (replace <path> with actual path):
+rm -rf <path>/dorado/bin/dorado* <path>/dorado/lib/*dorado*
 ```
 
 

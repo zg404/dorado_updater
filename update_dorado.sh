@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# This script uses CRLF line endings (Windows-style). To check syntax:
-#   sed -i 's/\r$//' update_dorado.sh && bash -n update_dorado.sh && sed -i 's/$/\r/' update_dorado.sh
-
 # Set -e to exit immediately if a command exits with a non-zero status.
 # Set -u to treat unset variables as an error.
 # Add -o pipefail to ensure pipes fail if any command fails
@@ -232,15 +229,9 @@ cp -r "$dorado_folder/lib/"* "$dorado_env/lib/" || {
   exit 1
 }
 
-# Verify the dorado executable is accessible
-if [ ! -f "$env_bin/dorado" ]; then
-  echo -e "${RED}Error: Dorado executable not found at $env_bin/dorado${NC}"
-  exit 1
-fi
-
 # Verify the dorado executable is accessible (now directly in env/bin)
 if [ ! -f "$env_bin/dorado" ]; then
-  echo -e "${RED}Error: Dorado executable not found after installation.${NC}"
+  echo -e "${RED}Error: Dorado executable not found at $env_bin/dorado${NC}"
   exit 1
 fi
 echo -e "${GREEN}Dorado binary installed to: $env_bin/dorado${NC}"

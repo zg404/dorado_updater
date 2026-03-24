@@ -221,11 +221,11 @@ fi
 
 # Copy the new binaries and libraries
 echo -e "${CYAN}Copying new Dorado binaries...${NC}"
-cp -r "$dorado_folder/bin/"* "$dorado_env/bin/" || {
+cp -rn "$dorado_folder/bin/"* "$dorado_env/bin/" || {
   echo -e "${RED}Error: Failed to copy bin directory.${NC}"
   exit 1
 }
-cp -r "$dorado_folder/lib/"* "$dorado_env/lib/" || {
+cp -rn "$dorado_folder/lib/"* "$dorado_env/lib/" || {
   echo -e "${RED}Error: Failed to copy lib directory.${NC}"
   exit 1
 }

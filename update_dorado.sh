@@ -74,6 +74,22 @@ if [ ! -d "$conda_base" ]; then
     exit 1
 fi
 
+# Create temporary directory for secure extraction
+temp_dir=$(mktemp -d) || {
+  echo -e "${RED}Error: Failed to create temporary directory.${NC}"
+  exit 1
+}
+echo -e "${CYAN}Using temp directory: $temp_dir${NC}"
+
+# Cleanup function to remove temp dir on exit
+cleanup_temp() {
+  if [ -d "$temp_dir" ]; then
+    echo -e "${CYAN}Cleaning up temporary directory...${NC}"
+    rm -rf "$temp_dir"
+  fi
+}
+trap cleanup_temp EXIT
+
 # Find all dorado tar.gz files and sort by version number
 # Use nullglob to avoid errors if no files match
 shopt -s nullglob
@@ -98,12 +114,7 @@ dorado_targz="${sorted_files[-1]}"
 # Get the expected folder name from the tar file name
 dorado_folder=$(basename "$dorado_targz" .tar.gz)
 
-# Check if the folder already exists (from previous extraction)
-if [ -d "$dorado_folder" ]; then
-  echo -e "${YELLOW}Found existing extracted folder: ${BOLD}$dorado_folder${NC}"
-  echo -e "${CYAN}Removing old extracted folder to ensure clean contents...${NC}"
-  rm -rf "$dorado_folder"
-fi
+# Note: Using temp directory, no need to check for existing extracted folder
 
 # Warn if multiple versions were found
 if [ "$dorado_count" -gt 1 ]; then
@@ -173,21 +184,18 @@ if [ -z "$dorado_env" ] || [ ! -d "$dorado_env" ]; then
   exit 1
 fi
 
-# Extract the tar.gz file.  Use a subshell to avoid changing the CWD of the main script.
-(
-  echo -e "${CYAN}Extracting Dorado package: ${BOLD}$dorado_targz${NC}"
-  if ! tar -xf "$dorado_targz"; then
-    echo -e "${RED}Error: Failed to extract tar.gz file.${NC}"
-    exit 1 
-  fi
-) 
+# Extract the tar.gz file securely to temp directory
+echo -e "${CYAN}Extracting Dorado package: ${BOLD}$dorado_targz${NC}"
 
-# Get extracted folder name - verify it exists
-dorado_folder=$(basename "$dorado_targz" .tar.gz)
-if [ ! -d "$dorado_folder" ]; then
-  echo -e "${RED}Error: Expected folder $dorado_folder not found after extraction.${NC}"
+# Use --strip-components=1 to remove top-level directory and prevent path traversal
+# Extract to temp_dir to avoid cluttering working directory
+if ! tar -xf "$dorado_targz" --strip-components=1 -C "$temp_dir"; then
+  echo -e "${RED}Error: Failed to extract tar.gz file.${NC}"
   exit 1
 fi
+
+# Point dorado_folder to temp extraction directory
+dorado_folder="$temp_dir"
 
 # --- Binary update process ---
 
@@ -240,7 +248,7 @@ fi
 echo -e "${GREEN}Dorado binary installed to: $env_bin/dorado${NC}"
 
 # --- Cleanup ---
-rm -rf "$dorado_folder" # remove extracted folder
+# Note: trap cleanup_temp EXIT handles temp dir cleanup automatically
 
 # --- Verification ---
 echo -e "${GREEN}Dorado update completed successfully!${NC}"

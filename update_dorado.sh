@@ -221,14 +221,8 @@ fi
 
 # Copy the new binaries and libraries
 echo -e "${CYAN}Copying new Dorado binaries...${NC}"
-cp -rn "$dorado_folder/bin/"* "$dorado_env/bin/" || {
-  echo -e "${RED}Error: Failed to copy bin directory.${NC}"
-  exit 1
-}
-cp -rn "$dorado_folder/lib/"* "$dorado_env/lib/" || {
-  echo -e "${RED}Error: Failed to copy lib directory.${NC}"
-  exit 1
-}
+cp -rn "$dorado_folder/bin/"* "$dorado_env/bin/" 2>/dev/null || true
+cp -rn "$dorado_folder/lib/"* "$dorado_env/lib/" 2>/dev/null || true
 
 # Verify the dorado executable is accessible (now directly in env/bin)
 if [ ! -f "$env_bin/dorado" ]; then

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This script uses CRLF line endings (Windows-style). To check syntax:
+#   sed -i 's/\r$//' update_dorado.sh && bash -n update_dorado.sh && sed -i 's/$/\r/' update_dorado.sh
+
 # Set -e to exit immediately if a command exits with a non-zero status.
 # Set -u to treat unset variables as an error.
 # Add -o pipefail to ensure pipes fail if any command fails

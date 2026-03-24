@@ -205,10 +205,11 @@ echo -e "${CYAN}Cleaning up existing Dorado binaries...${NC}"
 for f in "$env_bin"/dorado*; do
   [ -f "$f" ] && rm -f "$f"
 done
-# Remove libraries from env/lib
+# Remove dorado-related libraries from env/lib
 if [ -d "$env_lib" ]; then
-  find "$env_lib" -mindepth 1 -maxdepth 1 -type f -delete 2>/dev/null || true
-  find "$env_lib" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} + 2>/dev/null || true
+  for f in "$env_lib"/libdorado* "$env_lib"/libgcc_s*; do
+    [ -f "$f" ] && rm -f "$f"
+  done
 fi
  
 # Verify source directories exist before copying

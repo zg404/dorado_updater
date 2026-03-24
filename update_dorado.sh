@@ -102,6 +102,15 @@ function verify_checksum {
   fi
 }
 
+# Find dorado environment path using JSON parsing
+function find_dorado_env_path {
+  if [ "$USE_JQ" -eq 1 ]; then
+    local env_json=$($conda_cmd env list --json 2>/dev/null || echo '{"envs":[]}')
+    local env_path=$(echo "$env_json" | jq -r '.envs[] | select(endswith("/dorado"))' 2>/dev/null | head -n 1)
+    echo "$env_path"
+  fi
+}
+
 # --- Conda environment setup and checks ---
 
 # Find the conda executable - check both conda and mamba
@@ -201,8 +210,7 @@ dorado_env=""
 
 if [ "$USE_JQ" -eq 1 ]; then
   # Use JSON for reliable parsing
-  env_json=$($conda_cmd env list --json 2>/dev/null || echo '{"envs":[]}')
-  dorado_env=$(echo "$env_json" | jq -r '.envs[] | select(endswith("/dorado"))' 2>/dev/null | head -n 1)
+  dorado_env=$(find_dorado_env_path)
   [ -n "$dorado_env" ] && env_exists=1
 else
   # Fallback to grep/awk parsing
@@ -249,8 +257,7 @@ if [ "$env_exists" -eq 0 ]; then
   
   # Get the path of the newly created environment
   if [ "$USE_JQ" -eq 1 ]; then
-    env_json=$($conda_cmd env list --json 2>/dev/null || echo '{"envs":[]}')
-    dorado_env=$(echo "$env_json" | jq -r '.envs[] | select(endswith("/dorado"))' 2>/dev/null | head -n 1)
+    dorado_env=$(find_dorado_env_path)
   else
     dorado_env=$($conda_cmd env list | grep "dorado" | awk '{print $NF}')
     if [ -z "$dorado_env" ]; then
